@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>IoT Dashboard - Monitoring Ruangan</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: Arial; text-align: center; padding: 20px; background: #f0f2f5; }
+        .chart-container { width: 80%; margin: auto; background: white; padding: 20px; border-radius: 10px; }
+    </style>
+</head>
+<body>
+    <h2>Dashboard Monitoring ESP32 (Lolin D32)</h2>
+    <div class="chart-container">
+        <canvas id="myChart"></canvas>
+    </div>
+
+    <script>
+        var ctx = document.getElementById('myChart').getContext('2d');
+        var myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [
+                    { label: 'Suhu (°C)', data: [], borderColor: 'red', fill: false },
+                    { label: 'Kelembapan (%)', data: [], borderColor: 'blue', fill: false },
+                    { label: 'Kecerahan (LDR)', data: [], borderColor: 'orange', fill: false }
+                ]
+            }
+        });
+
+        function updateData() {
+            $.ajax({
+                url: 'get_data.php',
+                success: function(response) {
+                    myChart.data.labels = response.map(item => item.tglData.split(' ')[1]);
+                    myChart.data.datasets[0].data = response.map(item => item.suhu);
+                    myChart.data.datasets[1].data = response.map(item => item.kelembapan);
+                    myChart.data.datasets[2].data = response.map(item => item.lumen);
+                    myChart.update();
+                }
+            });
+        }
+
+        // Auto Load setiap 5 detik
+        setInterval(updateData, 5000);
+        updateData(); // Load pertama kali
+    </script>
+</body>
+</html>
